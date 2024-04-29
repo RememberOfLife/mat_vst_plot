@@ -23,7 +23,7 @@ void mode_readin_test(const char* in_path)
                 ec_vec[i].time2,
                 ec_vec[i].instr2,
                 ec_vec[i].instr2_abs,
-                ec_vec[i].write_no_read ? "WR" : "RD"
+                ec_vec[i].write_no_read ? "W" : "R"
             );
         }
     }

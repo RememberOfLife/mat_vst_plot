@@ -28,8 +28,8 @@ class visual_info {
 
   public:
 
-    uint64_t start_time;
-    uint64_t stop_time;
+    uint64_t start_time = 0;
+    uint64_t stop_time = 0;
 
     std::map<uint64_t, std::vector<ec_info_rw>> ecs;
 
@@ -46,4 +46,7 @@ class visual_info {
 
     bool write_to_file(const char* filepath);
     bool read_from_file(const char* filepath);
+
+    void push_ec(uint64_t addr, uint64_t time2, uint64_t instr2, uint64_t instr2_abs, bool write_no_read);
+    void push_sample(uint64_t addr, uint64_t time2, uint64_t hitc, uint64_t combination);
 };

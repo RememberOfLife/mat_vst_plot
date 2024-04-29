@@ -9,7 +9,7 @@ int main(int argc, char** argv)
 {
     enum OMODE {
         OMODE_NONE = 0,
-        OMODE_OUTPUT_TEST,
+        OMODE_WRITEOUT_TEST,
         OMODE_READIN_TEST,
         OMODE_READIN_DRAW,
     } mode = OMODE_NONE;
@@ -19,7 +19,7 @@ int main(int argc, char** argv)
 
     if (argc >= 2) {
         if (strcmp(argv[1], "output-test") == 0) {
-            mode = OMODE_OUTPUT_TEST;
+            mode = OMODE_WRITEOUT_TEST;
             if (argc >= 3) {
                 out_path = argv[2];
             } else {
@@ -51,8 +51,8 @@ int main(int argc, char** argv)
     }
 
     switch (mode) {
-        case OMODE_OUTPUT_TEST: {
-            mode_output_test(out_path);
+        case OMODE_WRITEOUT_TEST: {
+            mode_writeout_test(out_path);
         } break;
         case OMODE_READIN_TEST: {
             mode_readin_test(in_path);

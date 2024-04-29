@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cstdint>
 #include <cstdio>
 #include <map>
@@ -6,32 +7,6 @@
 #include "util.hpp"
 
 #include "visual_info.hpp"
-
-/*
-if you want to fill this you need these
-
-void push_ec(uint64_t addr, uint64_t time2, uint64_t instr2, uint64_t instr2_abs, bool write_no_read)
-{
-    std::vector<ec_info_rw>& ec_vec = ecs[addr];
-    ec_vec.push_back({time2, instr2, instr2_abs, write_no_read});
-}
-
-void push_sample(ReservoirSampler::Sample s)
-{
-    // find sample within ec and just store the relevant extra info and an index into the ecs
-    std::map<uint64_t, std::vector<ec_info_rw>>::iterator ec_it = ecs.find(s.addr);
-    if (ec_it != ecs.end()) {
-        std::vector<ec_info_rw>& ec_vec = ec_it->second;
-        std::vector<ec_info_rw>::iterator target = std::lower_bound(ec_vec.begin(), ec_vec.end(), s.time2, ec_info_rw_cmp);
-        if (target != ec_vec.end() && target->time2 == s.time2) {
-            uint64_t ec_idx = std::distance(ec_vec.begin(), target); // idx of ec in ec_vec in ecs
-            samples.push_back({s.addr, ec_idx, s.hitc, s.bit_position_enumeration_idx});
-            return;
-        }
-    }
-    errorf("ERROR: unable to find EC for sample\n");
-}
-*/
 
 void visual_info::serialize_u64(uint8_t* buf, uint64_t v)
 {
@@ -117,6 +92,8 @@ bool visual_info::read_from_file(const char* filepath)
         return false;
     }
 
+    start_time = read_in_u64(fstream);
+    stop_time = read_in_u64(fstream);
     uint64_t map_size = read_in_u64(fstream);
     for (uint64_t i = 0; i < map_size; i++) {
         uint64_t addr = read_in_u64(fstream);
@@ -144,4 +121,26 @@ bool visual_info::read_from_file(const char* filepath)
 
     fclose(fstream);
     return true;
+}
+
+void visual_info::push_ec(uint64_t addr, uint64_t time2, uint64_t instr2, uint64_t instr2_abs, bool write_no_read)
+{
+    std::vector<ec_info_rw>& ec_vec = ecs[addr];
+    ec_vec.push_back({time2, instr2, instr2_abs, write_no_read});
+}
+
+void visual_info::push_sample(uint64_t addr, uint64_t time2, uint64_t hitc, uint64_t combination)
+{
+    // find sample within ec and just store the relevant extra info and an index into the ecs
+    std::map<uint64_t, std::vector<ec_info_rw>>::iterator ec_it = ecs.find(addr);
+    if (ec_it != ecs.end()) {
+        std::vector<ec_info_rw>& ec_vec = ec_it->second;
+        std::vector<ec_info_rw>::iterator target = std::lower_bound(ec_vec.begin(), ec_vec.end(), time2, ec_info_rw::ec_info_rw_cmp);
+        if (target != ec_vec.end() && target->time2 == time2) {
+            uint64_t ec_idx = std::distance(ec_vec.begin(), target); // idx of ec in ec_vec in ecs
+            samples.push_back({addr, ec_idx, hitc, combination});
+            return;
+        }
+    }
+    errorf("ERROR: unable to find EC for sample\n");
 }

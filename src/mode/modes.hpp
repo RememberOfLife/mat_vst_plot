@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-void mode_output_test(const char* out_path);
+void mode_writeout_test(const char* out_path);
 
 void mode_readin_test(const char* in_path);
 
