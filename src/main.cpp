@@ -29,7 +29,7 @@ struct visual_info {
     struct visual_sample {
         uint64_t addr;
         uint64_t idx;
-        uint64_t hits;
+        uint64_t hitc;
         uint64_t combination;
     };
 
@@ -98,7 +98,7 @@ struct visual_info {
     {
         uint8_t format_buf[8];
         size_t read = fread(&format_buf, sizeof(format_buf), 1, fstream);
-        if (read != sizeof(format_buf)) {
+        if (read != 1) {
             errorf("ERROR: unable to read u64\n");
         }
         return deserialize_u64(format_buf);
@@ -128,7 +128,7 @@ struct visual_info {
         for (size_t i = 0; i < samples.size(); i++) {
             write_out_u64(fstream, samples[i].addr);
             write_out_u64(fstream, samples[i].idx);
-            write_out_u64(fstream, samples[i].hits);
+            write_out_u64(fstream, samples[i].hitc);
             write_out_u64(fstream, samples[i].combination);
         }
 
@@ -149,7 +149,7 @@ struct visual_info {
             std::vector<ec_info_rw>& ec_vec = ecs[addr];
             uint64_t vec_len = read_in_u64(fstream);
             ec_vec.reserve(vec_len);
-            for (uint64_t j = i; j < vec_len; j++) {
+            for (uint64_t j = 0; j < vec_len; j++) {
                 // per ec info
                 uint64_t time2 = read_in_u64(fstream);
                 uint64_t instr2 = read_in_u64(fstream);
@@ -163,9 +163,9 @@ struct visual_info {
         for (uint64_t i = 0; i < sample_count; i++) {
             uint64_t addr = read_in_u64(fstream);
             uint64_t idx = read_in_u64(fstream);
-            uint64_t hits = read_in_u64(fstream);
+            uint64_t hitc = read_in_u64(fstream);
             uint64_t combination = read_in_u64(fstream);
-            samples.push_back({addr, idx, hits, combination});
+            samples.push_back({addr, idx, hitc, combination});
         }
 
         fclose(fstream);
@@ -176,10 +176,11 @@ struct visual_info {
 int main(int argc, char** argv)
 {
     enum OMODE {
-        OMODE_OUTPUT_TEST = 0,
+        OMODE_NONE = 0,
+        OMODE_OUTPUT_TEST,
         OMODE_READIN_TEST,
         OMODE_READIN_DRAW,
-    } mode;
+    } mode = OMODE_NONE;
 
     const char* in_path;
     const char* out_path;
@@ -208,7 +209,8 @@ int main(int argc, char** argv)
                 errorf("ERROR: missing path(s) for readin draw\n");
             }
         }
-    } else {
+    }
+    if (mode == OMODE_NONE) {
         printf("usage:\n");
         printf("\tvst_plot output-test <outpath>\n");
         printf("\tvst_plot readin-test <inpath>\n");
@@ -218,12 +220,43 @@ int main(int argc, char** argv)
 
     switch (mode) {
         case OMODE_OUTPUT_TEST: {
-            //TODO
+            visual_info vinfo;
+            //TODO some test data
+            vinfo.write_to_file(out_path);
         } break;
         case OMODE_READIN_TEST: {
-            //TODO
+            visual_info vinfo;
+            vinfo.read_from_file(in_path);
+            printf("tracking %lu words\n", vinfo.ecs.size());
+            for (std::map<uint64_t, std::vector<visual_info::ec_info_rw>>::iterator ec_it = vinfo.ecs.begin(); ec_it != vinfo.ecs.end(); ec_it++) {
+                std::vector<visual_info::ec_info_rw>& ec_vec = ec_it->second;
+                printf("\t[%lu]: %lu ECs\n", ec_it->first, ec_vec.size());
+                for (size_t i = 0; i < ec_vec.size(); i++) {
+                    printf(
+                        "\t\tT2:%lu I2:%lu I2A:%lu %s\n",
+                        ec_vec[i].time2,
+                        ec_vec[i].instr2,
+                        ec_vec[i].instr2_abs,
+                        ec_vec[i].write_no_read ? "WR" : "RD"
+                    );
+                }
+            }
+            printf("\n");
+            printf("sample count: %lu\n", vinfo.samples.size());
+            for (size_t i = 0; i < vinfo.samples.size(); i++) {
+                printf(
+                    "\t[%lu]: ADDR:%lu IDX:%lu HITC:%lu COMB:%lu\n",
+                    i,
+                    vinfo.samples[i].addr,
+                    vinfo.samples[i].idx,
+                    vinfo.samples[i].hitc,
+                    vinfo.samples[i].combination
+                );
+            }
         } break;
         case OMODE_READIN_DRAW: {
+            visual_info vinfo;
+            vinfo.read_from_file(in_path);
             //TODO
         } break;
         default: {

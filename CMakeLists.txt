@@ -12,6 +12,8 @@ set(INCLUDES
 )
 
 set(SOURCES
+    src/util.cpp
+
     src/main.cpp
 )
 
