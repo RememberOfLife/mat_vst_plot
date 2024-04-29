@@ -18,12 +18,12 @@ int main(int argc, char** argv)
     const char* out_path;
 
     if (argc >= 2) {
-        if (strcmp(argv[1], "output-test") == 0) {
+        if (strcmp(argv[1], "writeout-test") == 0) {
             mode = OMODE_WRITEOUT_TEST;
             if (argc >= 3) {
                 out_path = argv[2];
             } else {
-                errorf("ERROR: missing outpath for output test\n");
+                errorf("ERROR: missing outpath for writeout test\n");
             }
         } else if (strcmp(argv[1], "readin-test") == 0) {
             mode = OMODE_READIN_TEST;
