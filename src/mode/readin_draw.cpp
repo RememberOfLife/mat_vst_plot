@@ -51,7 +51,7 @@ void mode_readin_draw(const char* in_path, const char* out_path)
                 double prev_adj_time = ec_idx == 0 ? 0 : (double)(ec_vec[ec_idx - 1].time2 - vinfo.start_time);
                 double gray = 0.3;
                 cairo_set_source_rgb(ctx, gray, gray, gray);
-                cairo_rectangle(ctx, prev_adj_time / total_time, word_space_height * word_line_i, adj_time / total_time, word_space_height * (word_line_i + 1));
+                cairo_rectangle(ctx, prev_adj_time / total_time, word_space_height * word_line_i, (adj_time - prev_adj_time) / total_time, word_space_height);
                 cairo_fill(ctx);
             } else if (ec_idx == 0) {
                 //TODO dont need this actually
@@ -77,7 +77,7 @@ void mode_readin_draw(const char* in_path, const char* out_path)
         // cairo_set_source_rgb(ctx, 1, 0.93, 0.38); // gold
         double gray = 0.3;
         cairo_set_source_rgb(ctx, gray, gray, gray);
-        cairo_rectangle(ctx, last_adj_time / total_time, word_space_height * word_line_i, 1, word_space_height * (word_line_i + 1));
+        cairo_rectangle(ctx, last_adj_time / total_time, word_space_height * word_line_i, 1, word_space_height);
         cairo_fill(ctx);
         word_line_i++;
     }
