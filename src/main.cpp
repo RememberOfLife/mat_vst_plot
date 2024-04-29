@@ -1,9 +1,12 @@
-#include <cassert>
 #include <cstdint>
 #include <cstdio>
+#include <cstring>
 #include <map>
 #include <vector>
 
+#include "util.hpp"
+
+//TODO draw out into separate class
 struct visual_info {
 
     struct ec_info_rw {
@@ -91,12 +94,12 @@ struct visual_info {
         fwrite(&format_buf, sizeof(format_buf), 1, fstream);
     }
 
-    uint64_t read_in_u64(FILE* fstream, uint64_t v)
+    uint64_t read_in_u64(FILE* fstream)
     {
         uint8_t format_buf[8];
         size_t read = fread(&format_buf, sizeof(format_buf), 1, fstream);
         if (read != sizeof(format_buf)) {
-            assert(0);
+            errorf("ERROR: unable to read u64\n");
         }
         return deserialize_u64(format_buf);
     }
@@ -111,13 +114,14 @@ struct visual_info {
         write_out_u64(fstream, ecs.size());
         for (std::map<uint64_t, std::vector<ec_info_rw>>::iterator ec_it = ecs.begin(); ec_it != ecs.end(); ec_it++) {
             write_out_u64(fstream, ec_it->first); // addr
-            write_out_u64(fstream, ec_it->second.size()); // vec len
-            for (size_t i = 0; i < ec_it->second.size(); i++) {
+            std::vector<ec_info_rw>& ec_vec = ec_it->second;
+            write_out_u64(fstream, ec_vec.size()); // vec len
+            for (size_t i = 0; i < ec_vec.size(); i++) {
                 // per ec info
-                write_out_u64(fstream, ec_it->second[i].time2);
-                write_out_u64(fstream, ec_it->second[i].instr2);
-                write_out_u64(fstream, ec_it->second[i].instr2_abs);
-                write_out_u64(fstream, ec_it->second[i].write_no_read ? 1 : 0);
+                write_out_u64(fstream, ec_vec[i].time2);
+                write_out_u64(fstream, ec_vec[i].instr2);
+                write_out_u64(fstream, ec_vec[i].instr2_abs);
+                write_out_u64(fstream, ec_vec[i].write_no_read ? 1 : 0);
             }
         }
         write_out_u64(fstream, samples.size());
@@ -132,11 +136,100 @@ struct visual_info {
         return true;
     }
 
-    void read_from_file(const char* filepath)
+    bool read_from_file(const char* filepath)
     {
+        FILE* fstream = fopen(filepath, "rb");
+        if (fstream == NULL) {
+            return false;
+        }
+
+        uint64_t map_size = read_in_u64(fstream);
+        for (uint64_t i = 0; i < map_size; i++) {
+            uint64_t addr = read_in_u64(fstream);
+            std::vector<ec_info_rw>& ec_vec = ecs[addr];
+            uint64_t vec_len = read_in_u64(fstream);
+            ec_vec.reserve(vec_len);
+            for (uint64_t j = i; j < vec_len; j++) {
+                // per ec info
+                uint64_t time2 = read_in_u64(fstream);
+                uint64_t instr2 = read_in_u64(fstream);
+                uint64_t instr2_abs = read_in_u64(fstream);
+                bool write_no_read = read_in_u64(fstream) == 0 ? false : true;
+                ec_vec.push_back({time2, instr2, instr2_abs, write_no_read});
+            }
+        }
+        uint64_t sample_count = read_in_u64(fstream);
+        samples.reserve(sample_count);
+        for (uint64_t i = 0; i < sample_count; i++) {
+            uint64_t addr = read_in_u64(fstream);
+            uint64_t idx = read_in_u64(fstream);
+            uint64_t hits = read_in_u64(fstream);
+            uint64_t combination = read_in_u64(fstream);
+            samples.push_back({addr, idx, hits, combination});
+        }
+
+        fclose(fstream);
+        return true;
     }
 };
 
 int main(int argc, char** argv)
 {
+    enum OMODE {
+        OMODE_OUTPUT_TEST = 0,
+        OMODE_READIN_TEST,
+        OMODE_READIN_DRAW,
+    } mode;
+
+    const char* in_path;
+    const char* out_path;
+
+    if (argc >= 2) {
+        if (strcmp(argv[1], "output-test") == 0) {
+            mode = OMODE_OUTPUT_TEST;
+            if (argc >= 3) {
+                out_path = argv[2];
+            } else {
+                errorf("ERROR: missing outpath for output test\n");
+            }
+        } else if (strcmp(argv[1], "readin-test") == 0) {
+            mode = OMODE_READIN_TEST;
+            if (argc >= 3) {
+                in_path = argv[2];
+            } else {
+                errorf("ERROR: missing inpath for readin test\n");
+            }
+        } else if (strcmp(argv[1], "readin-draw") == 0) {
+            mode = OMODE_READIN_DRAW;
+            if (argc >= 4) {
+                in_path = argv[2];
+                out_path = argv[3];
+            } else {
+                errorf("ERROR: missing path(s) for readin draw\n");
+            }
+        }
+    } else {
+        printf("usage:\n");
+        printf("\tvst_plot output-test <outpath>\n");
+        printf("\tvst_plot readin-test <inpath>\n");
+        printf("\tvst_plot readin-draw <inpath> <outpath>\n");
+        exit(1);
+    }
+
+    switch (mode) {
+        case OMODE_OUTPUT_TEST: {
+            //TODO
+        } break;
+        case OMODE_READIN_TEST: {
+            //TODO
+        } break;
+        case OMODE_READIN_DRAW: {
+            //TODO
+        } break;
+        default: {
+            errorf("ERROR: unknown mode");
+        } break;
+    }
+
+    return 0;
 }

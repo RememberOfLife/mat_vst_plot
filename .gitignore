@@ -1,6 +1,4 @@
 /.cache
 /.vscode
 /build**
-/res
-**/__pycache__
-/scripts
+/data
