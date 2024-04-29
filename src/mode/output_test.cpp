@@ -1,4 +1,6 @@
 #include <cstdint>
+#include <map>
+#include <vector>
 
 #include "visual_info.hpp"
 #include "util.hpp"

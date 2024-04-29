@@ -83,6 +83,8 @@ bool visual_info::write_to_file(const char* filepath)
         return false;
     }
 
+    write_out_u64(fstream, start_time);
+    write_out_u64(fstream, stop_time);
     write_out_u64(fstream, ecs.size());
     for (std::map<uint64_t, std::vector<ec_info_rw>>::iterator ec_it = ecs.begin(); ec_it != ecs.end(); ec_it++) {
         write_out_u64(fstream, ec_it->first); // addr

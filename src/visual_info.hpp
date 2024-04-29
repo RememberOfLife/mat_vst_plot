@@ -29,7 +29,7 @@ class visual_info {
   public:
 
     uint64_t start_time;
-    uint64_t end_time;
+    uint64_t stop_time;
 
     std::map<uint64_t, std::vector<ec_info_rw>> ecs;
 

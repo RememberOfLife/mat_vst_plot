@@ -1,12 +1,9 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
-#include <map>
-#include <vector>
 
 #include "mode/modes.hpp"
 #include "util.hpp"
-#include "visual_info.hpp"
 
 int main(int argc, char** argv)
 {
