@@ -12,7 +12,12 @@ set(INCLUDES
 )
 
 set(SOURCES
+    src/mode/output_test.cpp
+    src/mode/readin_draw.cpp
+    src/mode/readin_test.cpp
+
     src/util.cpp
+    src/visual_info.cpp
 
     src/main.cpp
 )
