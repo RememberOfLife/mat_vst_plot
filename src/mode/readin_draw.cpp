@@ -12,12 +12,14 @@
 
 void mode_readin_draw(const char* in_path, const char* out_path)
 {
+    fast_prng rand;
+    fprng_srand(&rand, 42);
+
     visual_info vinfo;
     vinfo.read_from_file(in_path);
-    //TODO
 
-    const int wPx = 1800;
-    const int hPx = 950;
+    const int wPx = 10000;
+    const int hPx = 10000;
     const double wPxF = wPx;
     const double hPxF = hPx;
     const double dPxF = hypot(wPxF, hPxF);
@@ -62,11 +64,7 @@ void mode_readin_draw(const char* in_path, const char* out_path)
             }
             // linemark reads
             double x_pos = adj_time / total_time;
-            if (ec_vec[ec_idx].write_no_read) {
-                cairo_set_source_rgb(ctx, 1, 0, 0);
-            } else {
-                cairo_set_source_rgb(ctx, 0, 0, 0);
-            }
+            cairo_set_source_rgb(ctx, 0, 0, 0);
             cairo_move_to(ctx, x_pos, word_space_height * word_line_i);
             cairo_line_to(ctx, x_pos, word_space_height * (word_line_i + 1));
             cairo_set_line_width(ctx, line_width);
@@ -84,32 +82,30 @@ void mode_readin_draw(const char* in_path, const char* out_path)
 
     // horiztonal lines separating the addresses
     for (uint64_t i = 1; i < word_count; i++) {
-        cairo_set_source_rgb(ctx, 0, 0, 0);
-        cairo_move_to(ctx, 0, word_space_height * i);
-        cairo_line_to(ctx, 1, word_space_height * i);
-        cairo_set_line_width(ctx, line_width);
-        cairo_stroke(ctx);
+        // cairo_set_source_rgb(ctx, 0, 0, 0);
+        // cairo_move_to(ctx, 0, word_space_height * i);
+        // cairo_line_to(ctx, 1, word_space_height * i);
+        // cairo_set_line_width(ctx, line_width);
+        // cairo_stroke(ctx);
     }
 
-    // cairo_set_line_width(ctx, 0.1);
-    // cairo_set_source_rgb(ctx, 0, 0, 0);
-    // cairo_rectangle(ctx, 0.25, 0.25, 0.5, 0.5);
-    // cairo_stroke(ctx);
-
-    // cairo_set_source_rgb(ctx, 1, 0, 0);
-    // cairo_rectangle(ctx, 0.15, 0.15, 0.2, 0.2);
-    // cairo_fill(ctx);
-
-    // cairo_set_source_rgb(ctx, 0, 0, 1);
-    // cairo_move_to(ctx, 0.1, 0.9);
-    // cairo_line_to(ctx, 0.9, 0.1);
-    // cairo_set_line_width(ctx, 0.05);
-    // cairo_stroke(ctx);
-
-    // cairo_set_source_rgb(ctx, 0, 1, 0);
-    // cairo_arc(ctx, 0.75, 0.75, 0.15, 0 * M_PI, 2 * M_PI);
-    // cairo_set_line_width(ctx, 0.075);
-    // cairo_stroke(ctx);
+    // sampling dots
+    for (uint64_t i = 0; i < vinfo.samples.size(); i++) {
+        visual_sample& sample = vinfo.samples[i];
+        std::map<uint64_t, std::vector<ec_info_rw>>::iterator ec_it = vinfo.ecs.find(sample.addr);
+        word_line_i = std::distance(vinfo.ecs.begin(), ec_it);
+        double x_start = sample.idx == 0 ? 0 : (double)(ec_it->second[sample.idx - 1].time2 - vinfo.start_time);
+        double x_end = (double)(ec_it->second[sample.idx].time2 - vinfo.start_time);
+        double max_width = x_end - x_start;
+        double rn = general_f64_zto(fprng_rand64(&rand));
+        double x_pos = (x_start + max_width * rn) / total_time;
+        cairo_set_source_rgb(ctx, 1, 0, 0);
+        // cairo_arc(ctx, x_pos, word_space_height * word_line_i + word_space_height * 0.5, 0.003, 0, M_PI * 2);
+        cairo_move_to(ctx, x_pos, word_space_height * word_line_i);
+        cairo_line_to(ctx, x_pos, word_space_height * (word_line_i + 1) + 0.002);
+        cairo_set_line_width(ctx, line_width * 2);
+        cairo_stroke(ctx);
+    }
 
     // drawing end
     //#####
