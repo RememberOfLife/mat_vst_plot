@@ -1,0 +1,16 @@
+#!/bin/bash
+
+input_dir="../data"
+output_dir="${input_dir}/out"
+
+for vst_file in "$input_dir"/*.vst; do
+
+    filename=$(basename "$vst_file" .vst)
+
+    output_file="${output_dir}/${filename}.png"
+
+    vst_plot readin-draw "$vst_file" "$output_file" &
+
+done
+
+wait

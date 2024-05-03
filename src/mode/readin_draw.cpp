@@ -18,8 +18,13 @@ void mode_readin_draw(const char* in_path, const char* out_path)
     visual_info vinfo;
     vinfo.read_from_file(in_path);
 
-    const int wPx = 10000;
-    const int hPx = 10000;
+    double total_time = (double)(vinfo.stop_time - vinfo.start_time);
+    uint64_t word_count = vinfo.ecs.size();
+
+    const int max_dim = 10000;
+
+    const int wPx = std::min(max_dim, (int)total_time * 3);
+    const int hPx = std::min(max_dim, (int)word_count * 6);
     const double wPxF = wPx;
     const double hPxF = hPx;
     const double dPxF = hypot(wPxF, hPxF);
@@ -35,12 +40,9 @@ void mode_readin_draw(const char* in_path, const char* out_path)
     //#####
     // drawing start
 
-    double total_time = (double)(vinfo.stop_time - vinfo.start_time);
-
-    uint64_t word_count = vinfo.ecs.size();
     double word_space_height = (double)1 / (double)word_count;
 
-    double line_width = 0.001; //TODO find proper linewidth dynamically
+    double line_width = 1 / hPxF; //0.0001
 
     // draw colors for discarded no
     uint64_t word_line_i = 0;
@@ -81,12 +83,14 @@ void mode_readin_draw(const char* in_path, const char* out_path)
     }
 
     // horiztonal lines separating the addresses
-    for (uint64_t i = 1; i < word_count; i++) {
-        // cairo_set_source_rgb(ctx, 0, 0, 0);
-        // cairo_move_to(ctx, 0, word_space_height * i);
-        // cairo_line_to(ctx, 1, word_space_height * i);
-        // cairo_set_line_width(ctx, line_width);
-        // cairo_stroke(ctx);
+    if (word_count < 2000) {
+        for (uint64_t i = 1; i < word_count; i++) {
+            cairo_set_source_rgb(ctx, 0, 0, 0);
+            cairo_move_to(ctx, 0, word_space_height * i);
+            cairo_line_to(ctx, 1, word_space_height * i);
+            cairo_set_line_width(ctx, line_width * (word_count < 1000 ? 1 : 0.5));
+            cairo_stroke(ctx);
+        }
     }
 
     // sampling dots
@@ -103,7 +107,7 @@ void mode_readin_draw(const char* in_path, const char* out_path)
         // cairo_arc(ctx, x_pos, word_space_height * word_line_i + word_space_height * 0.5, 0.003, 0, M_PI * 2);
         cairo_move_to(ctx, x_pos, word_space_height * word_line_i);
         cairo_line_to(ctx, x_pos, word_space_height * (word_line_i + 1) + 0.002);
-        cairo_set_line_width(ctx, line_width * 2);
+        cairo_set_line_width(ctx, line_width * (hPxF / 1000));
         cairo_stroke(ctx);
     }
 
