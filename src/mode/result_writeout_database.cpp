@@ -87,16 +87,9 @@ void mode_result_writeout_database(const char* in_path, const char* out_path, co
             uint64_t r_addr = strtoull(row[0], NULL, 10);
             uint64_t r_time2 = strtoull(row[1], NULL, 10);
             uint64_t r_weight = strtoull(row[2], NULL, 10);
-            const char* r_type_str = row[3];
-            uint64_t r_type = PRT_COUNT;
-            for (int rtidx = 0; rtidx < PRT_COUNT; rtidx++) {
-                if (strcmp(r_type_str, pilot_result_str[rtidx]) == 0) {
-                    r_type = rtidx;
-                    break;
-                }
-            }
-            if (r_type == PRT_COUNT) {
-                errorf("mysql result types: type unknown '%s'\n", r_type_str);
+            uint64_t r_type = pilot_result_type_from_str(row[3]);
+            if (r_type == PRT_META_NOT_FOUND) {
+                errorf("mysql result types: type unknown '%s'\n", row[3]);
             }
             vinfo.push_sample(r_addr, r_time2, r_weight, r_type);
         }

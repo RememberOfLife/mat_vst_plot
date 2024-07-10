@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <cstdio>
+#include <cstring>
 #include <map>
 #include <vector>
 
@@ -15,7 +16,20 @@ const char* pilot_result_str[PRT_COUNT] = {
     [PRT_TRAP] = "TRAP",
     [PRT_DETECTED] = "DETECTED_MARKER",
     [PRT_UNCORRECTED] = "UNCORRECTABLE_ECC",
+    [PRT_META_ALL] = "ALL",
 };
+
+pilot_result_type pilot_result_type_from_str(const char* type_str)
+{
+    pilot_result_type ret = PRT_META_NOT_FOUND;
+    for (int rtidx = 0; rtidx < PRT_COUNT; rtidx++) {
+        if (strcmp(type_str, pilot_result_str[rtidx]) == 0) {
+            ret = (pilot_result_type)rtidx;
+            break;
+        }
+    }
+    return ret;
+}
 
 void visual_info::serialize_u64(uint8_t* buf, uint64_t v)
 {

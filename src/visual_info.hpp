@@ -12,10 +12,14 @@ enum pilot_result_type {
     PRT_TRAP,
     PRT_DETECTED,
     PRT_UNCORRECTED,
+    PRT_META_ALL,
     PRT_COUNT,
+    PRT_META_NOT_FOUND,
 };
 
 extern const char* pilot_result_str[PRT_COUNT];
+
+pilot_result_type pilot_result_type_from_str(const char* type_str);
 
 struct ec_info_rw {
     uint64_t time2;

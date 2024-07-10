@@ -20,6 +20,7 @@ int main(int argc, char** argv)
     const char* out_path;
     const char* bench_name;
     const char* variant_name;
+    const char* draw_type;
 
     if (argc >= 2) {
         if (strcmp(argv[1], "sample-writeout-test") == 0) {
@@ -56,9 +57,10 @@ int main(int argc, char** argv)
             }
         } else if (strcmp(argv[1], "result-readin-draw") == 0) {
             mode = OMODE_RESULT_READIN_DRAW;
-            if (argc >= 4) {
+            if (argc >= 5) {
                 in_path = argv[2];
                 out_path = argv[3];
+                draw_type = argv[4];
             } else {
                 errorf("ERROR: missing path(s) for result readin draw\n");
             }
@@ -70,7 +72,7 @@ int main(int argc, char** argv)
         printf("\tvst_plot sample-readin-test <inpath>\n");
         printf("\tvst_plot sample-readin-draw <inpath> <outpath>\n");
         printf("\tvst_plot result-writeout-database <inpath> <outpath> <bench-name> <variant-name>\n");
-        printf("\tvst_plot result-readin-draw <inpath> <outpath>\n");
+        printf("\tvst_plot result-readin-draw <inpath> <outpath> <draw-type>\n");
         exit(1);
     }
 
@@ -88,7 +90,7 @@ int main(int argc, char** argv)
             mode_result_writeout_database(in_path, out_path, bench_name, variant_name);
         } break;
         case OMODE_RESULT_READIN_DRAW: {
-            mode_result_readin_draw(in_path, out_path);
+            mode_result_readin_draw(in_path, out_path, draw_type);
         } break;
         default: {
             errorf("ERROR: unknown mode");
