@@ -8,6 +8,15 @@
 
 #include "visual_info.hpp"
 
+const char* pilot_result_str[PRT_COUNT] = {
+    [PRT_OK] = "OK_MARKER",
+    [PRT_SDC] = "SDC",
+    [PRT_TIMEOUT] = "TIMEOUT",
+    [PRT_TRAP] = "TRAP",
+    [PRT_DETECTED] = "DETECTED_MARKER",
+    [PRT_UNCORRECTED] = "UNCORRECTABLE_ECC",
+};
+
 void visual_info::serialize_u64(uint8_t* buf, uint64_t v)
 {
     buf[0] = (uint8_t)((v >> 56) & 0xFF);

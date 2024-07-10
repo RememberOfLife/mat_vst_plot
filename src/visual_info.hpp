@@ -5,6 +5,18 @@
 #include <map>
 #include <vector>
 
+enum pilot_result_type {
+    PRT_OK = 0,
+    PRT_SDC,
+    PRT_TIMEOUT,
+    PRT_TRAP,
+    PRT_DETECTED,
+    PRT_UNCORRECTED,
+    PRT_COUNT,
+};
+
+extern const char* pilot_result_str[PRT_COUNT];
+
 struct ec_info_rw {
     uint64_t time2;
     uint64_t instr2;

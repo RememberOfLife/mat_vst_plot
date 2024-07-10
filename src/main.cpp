@@ -69,7 +69,7 @@ int main(int argc, char** argv)
         printf("\tvst_plot sample-output-test <outpath>\n");
         printf("\tvst_plot sample-readin-test <inpath>\n");
         printf("\tvst_plot sample-readin-draw <inpath> <outpath>\n");
-        printf("\tvst_plot result-writeout-database <inpath> <outpath>\n");
+        printf("\tvst_plot result-writeout-database <inpath> <outpath> <bench-name> <variant-name>\n");
         printf("\tvst_plot result-readin-draw <inpath> <outpath>\n");
         exit(1);
     }
