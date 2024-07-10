@@ -1,6 +1,7 @@
 #include <cstdint>
 #include <map>
 #include <vector>
+#include <mysql.h>
 
 #include "visual_info.hpp"
 #include "util.hpp"

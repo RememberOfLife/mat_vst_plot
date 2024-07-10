@@ -35,6 +35,10 @@ endif()
 
 add_executable(vst_plot "${SOURCES}")
 
+find_package(MYSQL REQUIRED)
+target_include_directories(vst_plot PRIVATE ${MYSQL_INCLUDE_DIRS})
+target_link_libraries(vst_plot PRIVATE ${MYSQL_LIBRARIES})
+
 if(NO_CAIRO)
     add_definitions(-DNO_CAIRO)
 else()
