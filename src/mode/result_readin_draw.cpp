@@ -10,6 +10,6 @@
 
 #include "mode/modes.hpp"
 
-void mode_result_readin_draw(const char* in_path_samples, const char* in_path_results, const char* out_path)
+void mode_result_readin_draw(const char* in_path, const char* out_path)
 {
 }

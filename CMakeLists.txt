@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.18)
 
-option(NO_CAIRO "exclude cairo drawing support" OFF)
-
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 set (CMAKE_C_STANDARD 11)
@@ -14,7 +12,9 @@ set(INCLUDES
 )
 
 set(SOURCES
+src/mode/result_readin_draw.cpp
     src/mode/result_writeout_database.cpp
+    src/mode/sample_readin_draw.cpp
     src/mode/sample_readin_test.cpp
     src/mode/sample_writeout_test.cpp
 
@@ -24,28 +24,15 @@ set(SOURCES
     src/main.cpp
 )
 
-set(CAIRO_DRAW_SOURCES
-    src/mode/result_readin_draw.cpp
-    src/mode/sample_readin_draw.cpp
-)
-
-if(NOT NO_CAIRO)
-    list(APPEND SOURCES ${CAIRO_DRAW_SOURCES})
-endif()
-
 add_executable(vst_plot "${SOURCES}")
 
 find_package(MYSQL REQUIRED)
 target_include_directories(vst_plot PRIVATE ${MYSQL_INCLUDE_DIRS})
 target_link_libraries(vst_plot PRIVATE ${MYSQL_LIBRARIES})
 
-if(NO_CAIRO)
-    add_definitions(-DNO_CAIRO)
-else()
-    find_package(Cairo)
-    target_include_directories(vst_plot PRIVATE ${CAIRO_INCLUDE_DIRS})
-    target_link_libraries(vst_plot PRIVATE ${CAIRO_LIBRARIES})
-endif()
+find_package(Cairo)
+target_include_directories(vst_plot PRIVATE ${CAIRO_INCLUDE_DIRS})
+target_link_libraries(vst_plot PRIVATE ${CAIRO_LIBRARIES})
 
 target_compile_options(vst_plot PRIVATE
     # "-Wall"
