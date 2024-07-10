@@ -10,7 +10,7 @@
 
 #include "mode/modes.hpp"
 
-void mode_readin_draw(const char* in_path, const char* out_path)
+void mode_sample_readin_draw(const char* in_path, const char* out_path)
 {
     fast_prng rand;
     fprng_srand(&rand, 42);

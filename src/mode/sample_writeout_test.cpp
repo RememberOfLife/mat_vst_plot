@@ -7,7 +7,7 @@
 
 #include "mode/modes.hpp"
 
-void mode_writeout_test(const char* out_path)
+void mode_sample_writeout_test(const char* out_path)
 {
     visual_info vinfo;
 

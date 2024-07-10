@@ -7,7 +7,7 @@
 
 #include "mode/modes.hpp"
 
-void mode_readin_test(const char* in_path)
+void mode_sample_readin_test(const char* in_path)
 {
     visual_info vinfo;
     vinfo.read_from_file(in_path);
