@@ -99,18 +99,21 @@ void mode_result_readin_draw(const char* in_path, const char* out_path, const ch
     }
 
     double type_colors[PRT_COUNT][3] = {
-        [PRT_OK] = {0, 1, 0},
-        [PRT_SDC] = {1, 0, 0},
-        [PRT_TIMEOUT] = {0, 0, 1},
-        [PRT_TRAP] = {0, 1, 1},
-        [PRT_DETECTED] = {1, 1, 0},
-        [PRT_UNCORRECTED] = {0.5, 0, 1},
-        [PRT_META_ALL] = {0, 0, 0},
+        [PRT_OK] = {0, 1, 0}, // red
+        [PRT_SDC] = {1, 0, 0}, // green
+        [PRT_TIMEOUT] = {0, 0, 1}, // blue
+        [PRT_TRAP] = {0, 1, 1}, // cyan
+        [PRT_DETECTED] = {1, 1, 0}, // yellow
+        [PRT_UNCORRECTED] = {0.5, 0, 1}, // magenta
+        [PRT_META_ALL] = {0, 0, 0}, // black
     };
 
     // sampling dots
     for (uint64_t i = 0; i < vinfo.samples.size(); i++) {
         visual_sample& sample = vinfo.samples[i];
+        if (sample.combination == PRT_META_ALL) {
+            errorf("invalid sample with type all: idx %lu\n", i);
+        }
         if (tdraw_type != PRT_META_ALL && sample.combination != tdraw_type) {
             continue;
         }
