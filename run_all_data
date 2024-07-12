@@ -1,15 +1,31 @@
 #!/bin/bash
 
-input_dir="../data"
+if [ -z "$1" ]; then
+    echo "usage: $0 <input_directory>"
+    exit 1
+fi
+
+input_dir="$1"
 output_dir="${input_dir}/out"
 
-for vst_file in "$input_dir"/*.vst; do
+mkdir -p "$output_dir"
 
-    filename=$(basename "$vst_file" .vst)
+for file in "$input_dir"/*; do
 
-    output_file="${output_dir}/${filename}.png"
+    if [[ "$file" == *.vst ]]; then
+        mode="readin-draw"
+        drawt=""
+    elif [[ "$file" == *.vrt ]]; then
+        mode="result-readin-draw"
+        drawt="ALL"
+    else
+        continue
+    fi
 
-    vst_plot readin-draw "$vst_file" "$output_file" &
+    filename=$(basename "$file")
+    output_file="${output_dir}/${filename%.*}.png"
+
+    vst_plot "$mode" "$file" "$output_file" "$drawt" &
 
 done
 
