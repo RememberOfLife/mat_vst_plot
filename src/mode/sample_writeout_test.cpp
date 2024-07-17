@@ -14,6 +14,7 @@ void mode_sample_writeout_test(const char* out_path)
     // test data
     vinfo.start_time = 0;
     vinfo.stop_time = 200;
+
     vinfo.push_ec(1, 10, 0, 0, 1);
     vinfo.push_ec(2, 20, 0, 0, 0);
     vinfo.push_ec(3, 100, 0, 0, 0);

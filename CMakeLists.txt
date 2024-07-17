@@ -12,8 +12,9 @@ set(INCLUDES
 )
 
 set(SOURCES
-src/mode/result_readin_draw.cpp
+    src/mode/result_readin_draw.cpp
     src/mode/result_writeout_database.cpp
+    src/mode/result_writeout_test.cpp
     src/mode/sample_readin_draw.cpp
     src/mode/sample_readin_test.cpp
     src/mode/sample_writeout_test.cpp

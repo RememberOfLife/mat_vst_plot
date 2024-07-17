@@ -1,6 +1,7 @@
 #include <cmath>
 #include <cstdint>
 #include <map>
+#include <unordered_map>
 #include <vector>
 
 #include <cairo/cairo.h>
@@ -108,29 +109,98 @@ void mode_result_readin_draw(const char* in_path, const char* out_path, const ch
         [PRT_META_ALL] = {0, 0, 0}, // black
     };
 
-    // sampling dots
-    for (uint64_t i = 0; i < vinfo.samples.size(); i++) {
-        visual_sample& sample = vinfo.samples[i];
-        if (sample.combination == PRT_META_ALL) {
-            errorf("invalid sample with type all: idx %lu\n", i);
+    const bool use_grouped = true;
+    if (use_grouped) {
+        // group results by ec..
+        std::unordered_map<uint64_t, std::unordered_map<uint64_t, std::vector<visual_sample>>> memory_grouped_results;
+        for (uint64_t i = 0; i < vinfo.samples.size(); i++) {
+            visual_sample& sample = vinfo.samples[i];
+            if (sample.combination == PRT_META_ALL) {
+                errorf("invalid sample with type all: idx %lu\n", i);
+            }
+            memory_grouped_results[sample.addr][sample.idx].push_back(sample);
         }
-        if (tdraw_type != PRT_META_ALL && sample.combination != tdraw_type) {
-            continue;
+
+        for (std::map<uint64_t, std::vector<ec_info_rw>>::iterator ec_it = vinfo.ecs.begin(); ec_it != vinfo.ecs.end(); ec_it++) {
+            std::vector<ec_info_rw>& ec_vec = ec_it->second;
+            for (size_t ec_idx = 0; ec_idx < ec_vec.size(); ec_idx++) {
+                // for this addr and ec idx, draw grouped results
+                std::vector<visual_sample>& grouped_results = memory_grouped_results[ec_it->first][ec_idx];
+                uint64_t result_hit_total = 0;
+                for (size_t result_idx = 0; result_idx < grouped_results.size(); result_idx++) {
+                    result_hit_total += grouped_results[result_idx].hitc; // could also precalc in this while grouping above, if this is too slow
+                }
+                if (result_hit_total == 0) {
+                    continue;
+                }
+                visual_sample& example_sample = grouped_results[0];
+                std::map<uint64_t, std::vector<ec_info_rw>>::iterator ec_it = vinfo.ecs.find(example_sample.addr);
+                word_line_i = std::distance(vinfo.ecs.begin(), ec_it);
+                double x_start = example_sample.idx == 0 ? 0 : (double)(ec_it->second[example_sample.idx - 1].time2 - vinfo.start_time);
+                double x_end = (double)(ec_it->second[example_sample.idx].time2 - vinfo.start_time);
+                double max_width = x_end - x_start;
+                double effective_line_width = line_width * (hPxF / 1000);
+                if (effective_line_width * wPxF < 1) {
+                    effective_line_width = 1 / wPxF;
+                }
+                double max_marker_nr = max_width / effective_line_width;
+                uint64_t target_marker_count = result_hit_total > max_marker_nr ? max_marker_nr : result_hit_total;
+                std::vector<uint64_t> unique_locations;
+                for (size_t location_idx = 0; location_idx < target_marker_count; location_idx++) {
+                    unique_locations.push_back(location_idx);
+                }
+                for (size_t result_idx = 0; result_idx < grouped_results.size(); result_idx++) {
+                    visual_sample& draw_result = grouped_results[result_idx];
+                    for (size_t result_hit = 0; result_hit < draw_result.hitc; result_hit++) {
+                        if (tdraw_type != PRT_META_ALL && draw_result.combination != tdraw_type) {
+                            continue;
+                        }
+                        uint64_t rn = fprng_uintn(&rand, unique_locations.size());
+                        uint64_t draw_location = unique_locations[rn];
+                        {
+                            // swap erase location from vec
+                            if (unique_locations.size() > 1) {
+                                std::iter_swap(unique_locations.begin() + rn, unique_locations.end() - 1);
+                                unique_locations.pop_back();
+                            } else {
+                                unique_locations.clear();
+                            }
+                        }
+                        double x_pos = (x_start + max_width * ((double)draw_location / (double)target_marker_count)) / total_time;
+                        cairo_set_source_rgb(ctx, type_colors[draw_result.combination][0], type_colors[draw_result.combination][1], type_colors[draw_result.combination][2]);
+                        // cairo_arc(ctx, x_pos, word_space_height * word_line_i + word_space_height * 0.5, 0.003, 0, M_PI * 2);
+                        cairo_move_to(ctx, x_pos, word_space_height * word_line_i);
+                        cairo_line_to(ctx, x_pos, word_space_height * (word_line_i + 1) + 0.002);
+                        cairo_set_line_width(ctx, effective_line_width);
+                        cairo_stroke(ctx);
+                    }
+                }
+            }
         }
-        std::map<uint64_t, std::vector<ec_info_rw>>::iterator ec_it = vinfo.ecs.find(sample.addr);
-        word_line_i = std::distance(vinfo.ecs.begin(), ec_it);
-        double x_start = sample.idx == 0 ? 0 : (double)(ec_it->second[sample.idx - 1].time2 - vinfo.start_time);
-        double x_end = (double)(ec_it->second[sample.idx].time2 - vinfo.start_time);
-        double max_width = x_end - x_start;
-        for (uint64_t hitid = 0; hitid < sample.hitc; hitid++) {
-            double rn = general_f64_zto(fprng_rand64(&rand));
-            double x_pos = (x_start + max_width * rn) / total_time;
-            cairo_set_source_rgb(ctx, type_colors[sample.combination][0], type_colors[sample.combination][1], type_colors[sample.combination][2]);
-            // cairo_arc(ctx, x_pos, word_space_height * word_line_i + word_space_height * 0.5, 0.003, 0, M_PI * 2);
-            cairo_move_to(ctx, x_pos, word_space_height * word_line_i);
-            cairo_line_to(ctx, x_pos, word_space_height * (word_line_i + 1) + 0.002);
-            cairo_set_line_width(ctx, line_width * (hPxF / 1000));
-            cairo_stroke(ctx);
+    } else {
+        // sampling dots
+        for (uint64_t i = 0; i < vinfo.samples.size(); i++) {
+            visual_sample& sample = vinfo.samples[i];
+            if (tdraw_type != PRT_META_ALL && sample.combination != tdraw_type) {
+                continue;
+            }
+            std::map<uint64_t, std::vector<ec_info_rw>>::iterator ec_it = vinfo.ecs.find(sample.addr);
+            word_line_i = std::distance(vinfo.ecs.begin(), ec_it);
+            double x_start = sample.idx == 0 ? 0 : (double)(ec_it->second[sample.idx - 1].time2 - vinfo.start_time);
+            double x_end = (double)(ec_it->second[sample.idx].time2 - vinfo.start_time);
+            double max_width = x_end - x_start;
+            double effective_line_width = line_width * (hPxF / 1000);
+            double max_marker_nr = max_width / effective_line_width;
+            for (uint64_t hitid = 0; hitid < sample.hitc; hitid++) {
+                double rn = general_f64_zto(fprng_rand64(&rand));
+                double x_pos = (x_start + max_width * rn) / total_time;
+                cairo_set_source_rgb(ctx, type_colors[sample.combination][0], type_colors[sample.combination][1], type_colors[sample.combination][2]);
+                // cairo_arc(ctx, x_pos, word_space_height * word_line_i + word_space_height * 0.5, 0.003, 0, M_PI * 2);
+                cairo_move_to(ctx, x_pos, word_space_height * word_line_i);
+                cairo_line_to(ctx, x_pos, word_space_height * (word_line_i + 1) + 0.002);
+                cairo_set_line_width(ctx, effective_line_width);
+                cairo_stroke(ctx);
+            }
         }
     }
 

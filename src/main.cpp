@@ -12,6 +12,7 @@ int main(int argc, char** argv)
         OMODE_SAMPLE_WRITEOUT_TEST,
         OMODE_SAMPLE_READIN_TEST,
         OMODE_SAMPLE_READIN_DRAW,
+        OMODE_RESULT_WRITEOUT_TEST,
         OMODE_RESULT_WRITEOUT_DATABASE,
         OMODE_RESULT_READIN_DRAW,
     } mode = OMODE_NONE;
@@ -45,6 +46,13 @@ int main(int argc, char** argv)
             } else {
                 errorf("ERROR: missing path(s) for sample readin draw\n");
             }
+        } else if (strcmp(argv[1], "result-writeout-test") == 0) {
+            mode = OMODE_RESULT_WRITEOUT_TEST;
+            if (argc >= 3) {
+                out_path = argv[2];
+            } else {
+                errorf("ERROR: missing path(s) for result writeout test\n");
+            }
         } else if (strcmp(argv[1], "result-writeout-database") == 0) {
             mode = OMODE_RESULT_WRITEOUT_DATABASE;
             if (argc >= 6) {
@@ -71,6 +79,7 @@ int main(int argc, char** argv)
         printf("\tvst_plot sample-output-test <outpath>\n");
         printf("\tvst_plot sample-readin-test <inpath>\n");
         printf("\tvst_plot sample-readin-draw <inpath> <outpath>\n");
+        printf("\tvst_plot result-output-test <outpath>\n");
         printf("\tvst_plot result-writeout-database <inpath> <outpath> <bench-name> <variant-name>\n");
         printf("\tvst_plot result-readin-draw <inpath> <outpath> <draw-type>\n");
         exit(1);
@@ -85,6 +94,9 @@ int main(int argc, char** argv)
         } break;
         case OMODE_SAMPLE_READIN_DRAW: {
             mode_sample_readin_draw(in_path, out_path);
+        } break;
+        case OMODE_RESULT_WRITEOUT_TEST: {
+            mode_result_writeout_test(out_path);
         } break;
         case OMODE_RESULT_WRITEOUT_DATABASE: {
             mode_result_writeout_database(in_path, out_path, bench_name, variant_name);
